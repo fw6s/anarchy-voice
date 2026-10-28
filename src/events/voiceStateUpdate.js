@@ -8,6 +8,7 @@
 import { Events } from 'discord.js';
 import { store } from '../db.js';
 import { createTempChannel, deleteIfEmpty } from '../services/tempvc.js';
+import { settleLiveMute } from '../services/mute.js';
 
 export default {
   name: Events.VoiceStateUpdate,
@@ -15,6 +16,9 @@ export default {
     const left = oldState.channel;
     const joined = newState.channel;
     if (left?.id === joined?.id) return;
+
+    // A room mute must not follow them out of the room that set it.
+    await settleLiveMute(newState);
 
     // Someone dropped into the lobby: give them a room of their own.
     const setup = joined && newState.member ? store.setupByLobby(joined.id) : null;

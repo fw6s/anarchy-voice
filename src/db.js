@@ -66,6 +66,15 @@ db.exec(`
     kind      TEXT NOT NULL CHECK (kind IN ('trust', 'block')),
     PRIMARY KEY (guild_id, owner_id, target_id)
   );
+
+  -- Members the bot server-muted because they were already in a room when it
+  -- muted them. Lifted as soon as they are anywhere else; see services/mute.js.
+  CREATE TABLE IF NOT EXISTS live_mutes (
+    guild_id   TEXT NOT NULL,
+    user_id    TEXT NOT NULL,
+    channel_id TEXT NOT NULL,
+    PRIMARY KEY (guild_id, user_id)
+  );
 `);
 
 // guild_config held a single setup per server; it becomes slot 1.
@@ -169,6 +178,13 @@ const statements = {
   clearAccess: db.prepare(
     'DELETE FROM user_access WHERE guild_id = ? AND owner_id = ? AND target_id = ?',
   ),
+
+  getLiveMute: db.prepare('SELECT * FROM live_mutes WHERE guild_id = ? AND user_id = ?'),
+  setLiveMute: db.prepare(`
+    INSERT INTO live_mutes (guild_id, user_id, channel_id) VALUES (?, ?, ?)
+    ON CONFLICT (guild_id, user_id) DO UPDATE SET channel_id = excluded.channel_id
+  `),
+  clearLiveMute: db.prepare('DELETE FROM live_mutes WHERE guild_id = ? AND user_id = ?'),
 };
 
 export const store = {
@@ -235,6 +251,11 @@ export const store = {
     statements.setAccess.run(guildId, ownerId, targetId, kind),
   clearAccess: (guildId, ownerId, targetId) =>
     statements.clearAccess.run(guildId, ownerId, targetId),
+
+  getLiveMute: (guildId, userId) => statements.getLiveMute.get(guildId, userId) ?? null,
+  setLiveMute: (guildId, userId, channelId) =>
+    statements.setLiveMute.run(guildId, userId, channelId),
+  clearLiveMute: (guildId, userId) => statements.clearLiveMute.run(guildId, userId),
 };
 
 export default db;

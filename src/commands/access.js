@@ -6,6 +6,7 @@
  */
 
 import { blockUser, kickUser, trustUser, unblockUser, untrustUser } from '../services/access.js';
+import { muteUser, unmuteUser } from '../services/mute.js';
 import { targetCommand } from './_target.js';
 
 targetCommand('avtrust', {
@@ -41,4 +42,20 @@ targetCommand('avkick', {
   summary: 'disconnect someone from the room',
   apply: (m, target) => kickUser(m.channel, m.author.id, target),
   done: (r) => `<@${r.target.id}> was disconnected. They can still come back.`,
+});
+
+targetCommand('avmute', {
+  summary: 'mute someone in this room only, even after they leave and come back',
+  apply: (m, target) => muteUser(m.channel, m.author.id, target),
+  done: (r) =>
+    `<@${r.target.id}> is muted in this room. ` +
+    (r.pending
+      ? 'It takes effect when they reconnect, since the bot lacks **Mute Members** to do it right away.'
+      : 'They can still talk in other channels.'),
+});
+
+targetCommand('avunmute', {
+  summary: 'let a muted member talk in this room again',
+  apply: (m, target) => unmuteUser(m.channel, m.author.id, target),
+  done: (r) => `<@${r.target.id}> can talk in this room again.`,
 });

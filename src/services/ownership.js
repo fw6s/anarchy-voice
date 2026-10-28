@@ -10,6 +10,7 @@ import { log } from '../logger.js';
 import { renameBudget, sanitizeName } from './rename.js';
 import { AUTO } from './region.js';
 import { buildOverwrites } from './tempvc.js';
+import { mutedIn, withMutes } from './mute.js';
 
 /**
  * Reshapes a room around whoever owns it now: their saved name, limit, region,
@@ -25,7 +26,8 @@ export async function applyOwnerSettings(channel, ownerId) {
 
   try {
     await channel.permissionOverwrites.set(
-      buildOverwrites(channel.guild, ownerId, settings),
+      // Mutes belong to the room, not the owner, so they survive the handover.
+      withMutes(buildOverwrites(channel.guild, ownerId, settings), mutedIn(channel), ownerId),
       `Applying settings for new owner ${ownerId}`,
     );
     applied.push('permissions');

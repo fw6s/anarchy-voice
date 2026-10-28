@@ -92,7 +92,7 @@ chmod 600 .env
 Open this link in your browser, with `YOUR_APPLICATION_ID` replaced by the Application ID from step 1:
 
 ```
-https://discord.com/oauth2/authorize?client_id=YOUR_APPLICATION_ID&scope=bot+applications.commands&permissions=322031121
+https://discord.com/oauth2/authorize?client_id=YOUR_APPLICATION_ID&scope=bot+applications.commands&permissions=326225425
 ```
 
 Pick your server and click **Authorize**. The link asks only for the permissions the bot uses — no Administrator:
@@ -102,6 +102,7 @@ Pick your server and click **Authorize**. The link asks only for the permissions
 | Manage Channels | Create, rename and delete rooms, and create the setup channels |
 | Manage Roles | Set room permissions for privacy, trust and block |
 | Move Members | Move people into their room, kick them out of it |
+| Mute Members | `avmute` silences someone already in the room right away, and lets them talk again once they leave it |
 | View Channel, Connect, Speak, Stream, Use Voice Activity | Grant these to the room owner (a bot can only grant permissions it has) |
 | Send Messages, Embed Links, Attach Files, Read Message History | Post the panel and the room guide |
 | Create Invite | `avinvite` |
@@ -204,11 +205,15 @@ Type these in the chat of your room while you are connected to it. A leading `!`
 | `avblock <user>` | Hide the room from someone and keep them out | Owner |
 | `avunblock <user>` | Lift a block | Owner |
 | `avkick <user>` | Disconnect someone from the room | Owner |
+| `avmute <user>` | Mute someone in this room only. It stays if they leave and come back, but they can talk anywhere else | Owner |
+| `avunmute <user>` | Let them talk in this room again | Owner |
 | `avclaim` | Take over the room when its owner has left | Anyone in the room |
 | `avtransfer <user>` | Hand the room to someone else in it | Owner |
 | `avdelete` | Delete the room | Owner |
 
 `<user>` can be a mention, a user ID or a username. The panel buttons do the same things; **Waiting Room** and **Chat** are placeholders for now.
+
+Mutes belong to the room, not to the owner: they are not saved for your next room, and they stay when the room is claimed or transferred. Bots invited before `avmute` existed lack **Mute Members**; they still mute, but someone already in the room is only silenced after they reconnect. Re-invite with the link above to fix that.
 
 **Trusted** members can change the room's settings, but only the owner decides who is trusted or blocked, and only the owner can transfer or delete the room.
 
